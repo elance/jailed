@@ -65,7 +65,7 @@ var tests = {
     },
 
                     
-    'Applictaion API':
+    'Application API':
     function() {
         var api = {
             square : lighttest.protect(function(val, cb) {
@@ -585,7 +585,7 @@ var tests = {
     
     'Remote plugin':
     function() {
-        var path = 'http://asvd.github.io/jailed/tests/plugin14.js';
+        var path = 'https://asvd.github.io/jailed/tests/plugin14.js';
 
         var api = {
             square: lighttest.protect(function(val, cb) {
@@ -620,18 +620,24 @@ var tests = {
             function() {
                 lighttest.check(true);
 
-                var cb = lighttest.protect(
-                    function() {
-                        // should never be called
-                        lighttest.check(false);
-                        pluginBad.disconnect();
-                        lighttest.done();
-                    }
-                );
+                if (pluginBad.hasDedicatedThread()) {
+                    var cb = lighttest.protect(
+                        function() {
+                            // should never be called
+                            lighttest.check(false);
+                            pluginBad.disconnect();
+                            lighttest.done();
+                        }
+                    );
 
-                pluginBad.remote.infinite(cb);
+                    pluginBad.remote.infinite(cb);
 
-                setTimeout(step2, 2000);
+                    setTimeout(step2, 2000);
+                } else {
+                    // thread not obtained because of the browser
+                    pluginBad.disconnect();
+                    lighttest.done();
+                }
             }
         );
 
@@ -723,8 +729,8 @@ var tests = {
         plugin.whenFailed(whenFailed);
     },
                     
-
                     
+
 
     'Broken plugin':
     function() {
@@ -751,6 +757,7 @@ var tests = {
             )
         );
     },
+
 
 
     'Broken dynamic plugin':
@@ -802,7 +809,7 @@ var tests = {
 
     'Broken remote plugin':
     function() {
-        var path = 'http://asvd.github.io/jailed/tests/plugin18.js';
+        var path = 'https://asvd.github.io/jailed/tests/plugin18.js';
 
         var plugin = new jailed.Plugin(path);
 
@@ -893,7 +900,7 @@ var tests = {
 
     'Nonexisting remote plugin':
     function() {
-        var path = 'http://asvd.github.io/no_such_path.js';
+        var path = 'https://asvd.github.io/no_such_path.js';
         var plugin = new jailed.Plugin(path);
 
         var connect = lighttest.protect(
@@ -934,7 +941,6 @@ var tests = {
         plugin.whenFailed(fail);
     },
 
-    
     
     'Broken plugin method':
     function() {
@@ -1540,7 +1546,7 @@ var tests = {
         plugin.whenDisconnected(disconnect);
     },
     
-    
+
 
     'Delayed event subscription in the application':
     function() {
@@ -1549,14 +1555,6 @@ var tests = {
                 var plugin = new jailed.DynamicPlugin('');
 
                 var connectionCompleted = false;
-
-                var connectCheck = lighttest.protect(
-                    function() {
-                        plugin.disconnect();
-                        lighttest.check(connectionCompleted);
-                        setTimeout(stage2, 300);
-                    }
-                );
 
                 var tryConnect = lighttest.protect(
                     function() {
@@ -1568,8 +1566,16 @@ var tests = {
                     connectionCompleted = true;
                 }
 
+                var connectCheck = lighttest.protect(
+                    function() {
+                        plugin.disconnect();
+                        lighttest.check(connectionCompleted);
+                        setTimeout(stage2, 300);
+                    }
+                );
+
                 setTimeout(tryConnect, 300);
-                setTimeout(connectCheck, 600);
+                setTimeout(connectCheck, 3000);
             }
         );
 
@@ -1579,14 +1585,6 @@ var tests = {
                 var plugin = new jailed.DynamicPlugin('uau}');
 
                 var failureCompleted = false;
-
-                var failureCheck = lighttest.protect(
-                    function() {
-                        plugin.disconnect();
-                        lighttest.check(failureCompleted);
-                        setTimeout(stage3, 300);
-                    }
-                );
 
                 var tryFailure = lighttest.protect(
                     function() {
@@ -1598,8 +1596,16 @@ var tests = {
                     failureCompleted = true;
                 }
 
+                var failureCheck = lighttest.protect(
+                    function() {
+                        plugin.disconnect();
+                        lighttest.check(failureCompleted);
+                        setTimeout(stage3, 300);
+                    }
+                );
+
                 setTimeout(tryFailure, 300);
-                setTimeout(failureCheck, 600);
+                setTimeout(failureCheck, 3600);
             }
         );
 
@@ -1611,14 +1617,6 @@ var tests = {
 
                 var disconnectCompleted = false;
 
-                var disconnectCheck = lighttest.protect(
-                    function() {
-                        plugin.disconnect();
-                        lighttest.check(disconnectCompleted);
-                        lighttest.done();
-                    }
-                );
-
                 var tryDisconnect = lighttest.protect(
                     function() {
                         plugin.whenDisconnected(disconnected);
@@ -1629,8 +1627,16 @@ var tests = {
                     disconnectCompleted = true;
                 }
 
+                var disconnectCheck = lighttest.protect(
+                    function() {
+                        plugin.disconnect();
+                        lighttest.check(disconnectCompleted);
+                        lighttest.done();
+                    }
+                );
+
                 setTimeout(tryDisconnect, 300);
-                setTimeout(disconnectCheck, 600);
+                setTimeout(disconnectCheck, 5000);
             }
         );
 
@@ -1638,7 +1644,8 @@ var tests = {
         stage1();
     },
 
-    
+
+
     'Delayed event subscription in the plugin':
     function() {
         var api = {
