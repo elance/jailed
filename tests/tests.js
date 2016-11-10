@@ -1,4 +1,6 @@
-var isNode = typeof window == 'undefined';
+var __is__node__ = ((typeof process !== 'undefined') &&
+                    (!process.browser) &&
+                    (process.release.name.search(/node|io.js/) !== -1));
 var currentPath;
 
 var whenFailed = function(){
@@ -6,7 +8,7 @@ var whenFailed = function(){
     lighttest.done();
 }
 
-if (isNode) {
+if (__is__node__) {
     currentPath = __dirname + '/';
 } else {
     var scripts = document.getElementsByTagName('script');
@@ -305,7 +307,6 @@ var tests = {
     },
                     
                     
-
 
     'Two plugins with the same source but different interface':
     function() {
@@ -971,7 +972,7 @@ var tests = {
                             lighttest.done();
                         }
                     ),
-                    1000
+                    2000
                 );
 
                 var cb = lighttest.protect(
@@ -1016,6 +1017,7 @@ var tests = {
                 plugin.remote.square(val, cb);
             }
         );
+
 
         var path = currentPath + 'stage19/plugin19.js';
         var plugin = new jailed.Plugin(path);
@@ -1559,6 +1561,7 @@ var tests = {
                 var tryConnect = lighttest.protect(
                     function() {
                         plugin.whenConnected(connected);
+                        setTimeout(connectCheck, 4000);
                     }
                 );
 
@@ -1575,7 +1578,6 @@ var tests = {
                 );
 
                 setTimeout(tryConnect, 300);
-                setTimeout(connectCheck, 3000);
             }
         );
 
@@ -1589,6 +1591,7 @@ var tests = {
                 var tryFailure = lighttest.protect(
                     function() {
                         plugin.whenFailed(failed);
+                        setTimeout(failureCheck, 3500);
                     }
                 );
 
@@ -1605,7 +1608,6 @@ var tests = {
                 );
 
                 setTimeout(tryFailure, 300);
-                setTimeout(failureCheck, 3600);
             }
         );
 
@@ -1643,6 +1645,7 @@ var tests = {
 
         stage1();
     },
+
 
 
 
@@ -1824,6 +1827,7 @@ var tests = {
     
 };
 
-
+    
 lighttest.start(tests);
+
 

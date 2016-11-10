@@ -2,7 +2,7 @@ Jailed — flexible JS sandbox
 ============================
 
 Jailed is a small JavaScript library for running untrusted code in a
-sandbox.
+sandbox. The library is written in vanilla-js and has no dependencies.
 
 With Jailed you can:
 
@@ -15,9 +15,12 @@ directly calling those functions, but the application owner decides
 which functions to export, and therefore what will be allowed for the
 untrusted code to perform.
 
-The code is executed as a *plugin*, a special instance running in a
-web-worker inside a sandboxed frame (in case of web-browser
-environment), or as a restricted subprocess (in Node.js).
+The code is executed as a *plugin*, a special instance running as a
+restricted subprocess (in Node.js), or in a web-worker inside a
+sandboxed frame (in case of web-browser environment). The iframe is
+created locally, so that you don't need to host it on a separate
+(sub)domain.
+
 
 You can use Jailed to:
 
@@ -31,19 +34,13 @@ You can use Jailed to:
 
 - Initiate and interrupt the execution anytime;
 
-- Control the execution against a hangup or too long calculation
-  times;
+- *[Demo](http://asvd.github.io/jailed/demos/web/console/)* safely
+   execute user-submitted code;
 
-- Perform heavy calculations in a separate thread
-  *[Demo](http://asvd.github.io/jailed/demos/web/circle/)*
-
-- Delegate to a 3rd-party code the precise set of functions to
-  harmlessly operate on the part of your application
-  *[Demo](http://asvd.github.io/jailed/demos/web/banner/)*
-
-- Safely execute user-submitted code
-  *[Demo](http://asvd.github.io/jailed/demos/web/console/)*
-
+- *[Demo](http://asvd.github.io/jailed/demos/web/banner/)* embed
+  3rd-party code and provide it the precise set of functions to
+  harmlessly operate on the part of your application;
+  
 - Export the particular set of application functions into the sandbox
   (or in the opposite direction), and let those functions be invoked
   from the other site (without a need for manual messaging) thus
@@ -95,7 +92,7 @@ same way, particularly it may invoke a newer callback in reply.
 ### Installation
 
 For the web-browser environment — download and unpack the
-[distribution](https://github.com/asvd/jailed/releases/download/v0.2.0/jailed-0.2.0.tar.gz), or install it using [Bower](http://bower.io/):
+[distribution](https://github.com/asvd/jailed/releases/download/v0.3.1/jailed-0.3.1.tar.gz), or install it using [Bower](http://bower.io/):
 
 ```sh
 $ bower install jailed
@@ -122,7 +119,7 @@ var jailed = require('jailed');
 ```
 
 Optionally you may load the script from the
-[distribution](https://github.com/asvd/jailed/releases/download/v0.2.0/jailed-0.2.0.tar.gz):
+[distribution](https://github.com/asvd/jailed/releases/download/v0.3.1/jailed-0.3.1.tar.gz):
 
 ```js
 var jailed = require('path/to/jailed.js');
@@ -322,26 +319,21 @@ Just like as for `whenConnected()` method, those two methods may also
 be used several times or even after the event has actually been fired.
 
 
+### Compatibility
+
+Jailed was tested and should work in Node.js, and in the following
+browsers:
+
+- Internet Explorer 10+, Edge
+- Firefox 26+
+- Opera 12+
+- Safari 6+
+- Chrome 10+
+
+
 ### Security
 
 This is how the sandbox is built:
-
-##### In Node.js:
-
-- A Node.js subprocess is created by the Jailed library;
-
-- the subprocess (down)loads the file containing an untrusted code as
-  a string (or, in case of `DynamicPlugin`, simply uses the provided
-  string with code)
-
-- then `"use strict";` is appended to the head of that code (in order
-  to prevent breaking the sandbox using `arguments.callee.caller`);
-
-- finally the code is executed using `vm.runInNewContext()` method,
-  where the provided sandbox only exposes some basic methods like
-  `setTimeout()`, and the `application` object for messaging with the
-  application site.
-
 
 ##### In a web-browser:
 
@@ -367,6 +359,27 @@ main application origin);
  library in Node.js.*
 
 
+##### In Node.js:
+
+*Warning: according to recent reports
+ ([#33](https://github.com/asvd/jailed/issues/33)) this way of
+ sandboxing is not secure any longer, the fix is being prepared...*
+
+- A Node.js subprocess is created by the Jailed library;
+
+- the subprocess (down)loads the file containing an untrusted code as
+  a string (or, in case of `DynamicPlugin`, simply uses the provided
+  string with code)
+
+- then `"use strict";` is appended to the head of that code (in order
+  to prevent breaking the sandbox using `arguments.callee.caller`);
+
+- finally the code is executed using `vm.runInNewContext()` method,
+  where the provided sandbox only exposes some basic methods like
+  `setTimeout()`, and the `application` object for messaging with the
+  application site.
+
+--
 
 follow me on twitter: https://twitter.com/asvd0
 
